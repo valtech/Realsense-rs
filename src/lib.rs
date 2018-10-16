@@ -12,8 +12,10 @@ use std::ptr;
 
 use log::Level::Debug;
 
-pub const STREAM: c_int = rs2_stream_RS2_STREAM_COLOR as i32; // rs2_stream is a types of data provided by RealSense device
-pub const FORMAT: c_int = rs2_format_RS2_FORMAT_BGR8 as i32; // rs2_format is identifies how binary data is encoded within a frame
+pub const STREAM_COLOR: c_int = rs2_stream_RS2_STREAM_COLOR as i32; // rs2_stream is a types of data provided by RealSense device
+pub const STREAM_DEPTH: c_int = rs2_stream_RS2_STREAM_DEPTH as i32;
+pub const FORMAT_BGR: c_int = rs2_format_RS2_FORMAT_BGR8 as i32; // rs2_format is identifies how binary data is encoded within a frame
+pub const FORMAT_DEPTH: c_int = rs2_format_RS2_FORMAT_Z16 as i32;
 pub const STREAM_INDEX: i32 = 0 as i32; // Defines the stream index, used for multiple streams of the same type
 
 pub struct RealSense {
@@ -85,11 +87,11 @@ impl RealSense {
                 info!("Enabling stream");
                 rs2_config_enable_stream(
                     config,
-                    STREAM as u32,
+                    STREAM_DEPTH as u32,
                     STREAM_INDEX,
                     CAMERA_WIDTH,
                     CAMERA_HEIGHT,
-                    FORMAT as u32,
+                    FORMAT_DEPTH as u32,
                     FPS,
                     error,
                 );
@@ -122,6 +124,8 @@ impl RealSense {
             let num_of_frames = rs2_embedded_frames_count(frames, error);
             check_error(error);
 
+            let mut bytebuf = [0; 3*640*480];
+
             // TODO extract only last frame?
             for frame_index in 0..num_of_frames {
                 let frame = rs2_extract_frame(frames, frame_index, error);
@@ -141,6 +145,17 @@ impl RealSense {
                     debug!("Frame timestamp {}", frame_timestamp);
                 }
 
+                let mut ptr: *const u16 = rgb_frame_data as *mut u16;
+                let end = ptr.wrapping_offset(1*640*480);
+                let mut i = 0;
+                while ptr != end {
+                    bytebuf[i] = (*ptr as f32/8.0) as u8;
+                    bytebuf[i+1] = (*ptr as f32/8.0) as u8;
+                    bytebuf[i+2] = (*ptr as f32/8.0) as u8;
+                    i += 3;
+                    ptr = ptr.wrapping_offset(1);
+                }
+
                 rs2_release_frame(frame);
                 debug!("Released frame");
             }
@@ -148,7 +163,8 @@ impl RealSense {
             rs2_release_frame(frames);
             debug!("Released frame wrapper");
 
-            return AtomicPtr::new(rgb_frame_data as *mut u8);
+            return AtomicPtr::new(bytebuf.as_ptr() as *mut u8);
+            //return AtomicPtr::new(rgb_frame_data as *mut u8);
         }
     }
 }
