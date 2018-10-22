@@ -1,12 +1,11 @@
 [package]
-name = "RealSense-rs"
+name = "real_sense_rs"
 version = "0.1.0"
 authors = ["Warhell Nasim <warhell1@hotmail.com>"]
 
 [build-dependencies]
-bindgen = "*"
+bindgen = "0.42.1"
 
 [dependencies]
 log = "0.4"
 env_logger = "0.5.11"
-bmp = "*"
