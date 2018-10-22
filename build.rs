@@ -15,6 +15,8 @@ fn main() {
         // The input header we would like to generate
         // bindings for.
         .header("wrapper.h")
+        .clang_arg("-I/usr/include/c++/5/")
+        .clang_arg("-I/usr/include/x86_64-linux-gnu/c++/5/")
         // Finish the builder and generate the bindings.
         .generate()
         // Unwrap the Result and panic on failure.
