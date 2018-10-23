@@ -45,6 +45,7 @@ impl RealSense {
                 (rs_api::RS2_API_MAJOR_VERSION * 10000)
                 + (rs_api::RS2_API_MINOR_VERSION * 100)
                 + rs_api::RS2_API_PATCH_VERSION) as i32;
+            info!("Calculated API version: {}", api_version);
 
             let error: *mut *mut rs_api::rs2_error = ptr::null_mut();
             //let error = ptr::null_mut();
