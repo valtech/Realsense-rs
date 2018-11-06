@@ -73,7 +73,7 @@ impl RealSense {
 
             if cameras_count == 0 {
                 info!("Exiting...");
-                std::process::exit(1);
+                return None;
             }
 
             // Get the first connected device
